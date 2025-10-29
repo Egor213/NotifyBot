@@ -39,7 +39,4 @@ func (h *UserHandler) registerCommands() {
 		return h.handleGetEmail(ctx, msg)
 	})
 
-	h.RegisterCallback("view_settings", func(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
-		return "⚙️ Чтобы посмотреть настройки, используйте команду `/notify_settings`", nil
-	})
 }

@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS users_notify_settings (
     id SERIAL PRIMARY KEY,
     tg_id BIGINT REFERENCES users_mails(tg_id),
     service TEXT NOT NULL,
-    level log_level NOT NULL
+    level log_level NOT NULL,
+    UNIQUE (tg_id, service, level)
 );

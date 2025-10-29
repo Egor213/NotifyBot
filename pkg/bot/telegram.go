@@ -75,6 +75,7 @@ func sendUpdMes(msgChan <-chan *tgbotapi.Message, b *Bot) {
 		response, keyboard := b.handler.HandleMessage(msg)
 		msgToSend := tgbotapi.NewMessage(msg.Chat.ID, response)
 		msgToSend.ReplyMarkup = keyboard
+		// msgToSend.ParseMode = tgbotapi.ModeMarkdown
 		b.tg.Send(msgToSend)
 	}
 }
@@ -86,6 +87,7 @@ func handleCallback(cbChan <-chan *tgbotapi.CallbackQuery, b *Bot) {
 		chatID := cb.Message.Chat.ID
 		response, keyboard := b.handler.HandleCallback(cb)
 		msgToSend := tgbotapi.NewMessage(chatID, response)
+		// msgToSend.ParseMode = tgbotapi.ModeMarkdown
 		msgToSend.ReplyMarkup = keyboard
 		b.tg.Send(msgToSend)
 	}

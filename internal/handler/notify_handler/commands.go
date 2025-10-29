@@ -65,7 +65,7 @@ func (h *NotificationHandler) handleViewSettings(ctx context.Context, msg *tgbot
 func (h *NotificationHandler) handleSetSettings(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
 	args := strings.Fields(msg.CommandArguments())
 	if len(args) == 0 {
-		return "Использование: `/set_notify_settings service1,service2 [level1,level2]`", nil
+		return "Использование: `/set_notify_settings service1,service2 level1,level2`", nil
 	}
 
 	services, err := validation.ParseServices(args[0])

@@ -36,6 +36,9 @@ func (b *BaseHandler) RegisterCallback(key string, f func(context.Context, *tgbo
 	if b.callbacks == nil {
 		b.callbacks = make(map[string]func(context.Context, *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup))
 	}
+	if _, exists := b.callbacks[key]; exists {
+		panic(fmt.Sprintf("Callback '%s' уже зарегистрирован!", key))
+	}
 	b.callbacks[key] = f
 }
 

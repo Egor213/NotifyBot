@@ -32,6 +32,6 @@ func (h *NotificationHandler) registerCommands() {
 	h.RegisterCallback("view_settings", h.handleViewSettingsCallback)
 	h.RegisterCallback("remove_settings", h.handleRemoveSettingsCallback)
 	h.RegisterCallback("set_settings", func(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
-		return "🛠 Чтобы добавить настройки, используйте:\n`/set_notify_settings service1,service2 [level1,level2]`", nil
+		return "🛠 Чтобы добавить настройки, используйте:\n`/set_notify_settings service1,service2 level1,level2`", nil
 	})
 }
