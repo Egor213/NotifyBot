@@ -1,4 +1,4 @@
-package users
+package service
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type UserService struct {
 	userRepo repository.Users
 }
 
-func New(repo repository.Users) *UserService {
+func NewUsers(repo repository.Users) *UserService {
 	return &UserService{userRepo: repo}
 }
 
@@ -36,4 +36,15 @@ func (s *UserService) RegisterUser(ctx context.Context, tgID int64, email string
 	}
 
 	return user, nil
+}
+
+func (s *UserService) GetEmail(ctx context.Context, tgID int64) (string, error) {
+	user, err := s.userRepo.GetByID(ctx, tgID)
+	if err != nil {
+		if errors.Is(err, repoerrs.ErrUserNotFound) {
+			return "", srverrs.ErrUserNotFound
+		}
+		return "", fmt.Errorf("%w: %v", srverrs.ErrUserCheckFailed, err)
+	}
+	return user.Email, nil
 }

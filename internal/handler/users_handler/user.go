@@ -27,4 +27,5 @@ func (h *UserHandler) registerCommands() {
 		return h.handleStart()
 	})
 	h.RegisterCommand("register", h.handleRegister)
+	h.RegisterCommand("get_email", h.handleGetEmail)
 }

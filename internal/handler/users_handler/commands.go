@@ -42,3 +42,19 @@ func (h *UserHandler) handleRegister(ctx context.Context, msg *tgbotapi.Message)
 
 	return fmt.Sprintf("Вы успешно зарегистрированы! Ваша почта: %s", user.Email)
 }
+
+func (h *UserHandler) handleGetEmail(ctx context.Context, msg *tgbotapi.Message) string {
+	email, err := h.UserService.GetEmail(ctx, msg.Chat.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, srverrs.ErrUserNotFound):
+			return "Вы ещё не зарегистрированы. Используйте /register your@email.com"
+		case errors.Is(err, srverrs.ErrUserCheckFailed):
+			return "Произошла ошибка при проверке пользователя. Попробуйте позже."
+		default:
+			return fmt.Sprintf("Неизвестная ошибка: %v", err)
+		}
+	}
+
+	return fmt.Sprintf("Ваш текущий email: %s", email)
+}

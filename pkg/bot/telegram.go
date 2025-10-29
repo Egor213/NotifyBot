@@ -14,6 +14,7 @@ func getCommands() []tgbotapi.BotCommand {
 		{Command: "register", Description: "Зарегистрировать email"},
 		{Command: "notify", Description: "Отправить уведомление"},
 		{Command: "status", Description: "Проверить статус бота"},
+		{Command: "get_email", Description: "Посмотреть свою почту"},
 	}
 }
 
