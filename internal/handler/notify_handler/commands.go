@@ -13,23 +13,33 @@ import (
 )
 
 func (h *NotificationHandler) handleStatus(_ context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
-	return "Бот работает стабильно 🟢", nil
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
+			tgbotapi.NewInlineKeyboardButtonData("Добавить настройку", "set_settings"),
+		),
+	)
+	return "Бот работает стабильно 🟢", keyboard
 }
 
 func (h *NotificationHandler) handleViewSettings(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
-
 	settings, err := h.NotifyServ.GetSettings(ctx, msg.Chat.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, srverrs.ErrGetNotifySettings):
-			return "Произошла ошибка при получении настроек уведомлений. Попробуйте позже.", nil
+			return "⚠️ Произошла ошибка при получении настроек уведомлений. Попробуйте позже.", nil
 		default:
 			return fmt.Sprintf("Неизвестная ошибка: %v", err), nil
 		}
 	}
 
 	if len(settings) == 0 {
-		return "У вас пока нет настроек уведомлений.", nil
+		keyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Добавить настройку", "set_settings"),
+			),
+		)
+		return "У вас пока нет настроек уведомлений.", keyboard
 	}
 
 	serviceMap := make(map[string][]string)
@@ -39,21 +49,28 @@ func (h *NotificationHandler) handleViewSettings(ctx context.Context, msg *tgbot
 
 	var lines []string
 	for svc, levels := range serviceMap {
-		lines = append(lines, fmt.Sprintf("Сервис: %s | Уровни: %s", svc, strings.Join(levels, ", ")))
+		lines = append(lines, fmt.Sprintf("• %s — уровни: %s", svc, strings.Join(levels, ", ")))
 	}
 
-	return "Ваши настройки уведомлений:\n" + strings.Join(lines, "\n"), nil
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Изменить настройки", "set_settings"),
+			tgbotapi.NewInlineKeyboardButtonData("Удалить настройку", "remove_settings"),
+		),
+	)
+
+	return "🔔 Ваши настройки уведомлений:\n\n" + strings.Join(lines, "\n"), keyboard
 }
 
 func (h *NotificationHandler) handleSetSettings(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
 	args := strings.Fields(msg.CommandArguments())
 	if len(args) == 0 {
-		return "Используйте: /set_notify_settings service1,service2 [level1,level2]", nil
+		return "Использование: `/set_notify_settings service1,service2 [level1,level2]`", nil
 	}
 
 	services, err := validation.ParseServices(args[0])
 	if err != nil {
-		return "Необходимо вписать хотя бы 1 сервис.", nil
+		return "❗ Укажите хотя бы один сервис.", nil
 	}
 
 	var levels []entity.LogLevel
@@ -67,16 +84,22 @@ func (h *NotificationHandler) handleSetSettings(ctx context.Context, msg *tgbota
 	}
 
 	if err := h.NotifyServ.SetSettings(ctx, msg.Chat.ID, services, levels); err != nil {
-		return fmt.Sprintf("Не удалось сохранить настройки: %v", err), nil
+		return fmt.Sprintf("❌ Не удалось сохранить настройки: %v", err), nil
 	}
 
-	return "Настройки оповещений установлены ✅", nil
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
+		),
+	)
+
+	return "✅ Настройки уведомлений успешно сохранены!", keyboard
 }
 
 func (h *NotificationHandler) handleRemoveSettings(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
 	args := strings.Fields(msg.CommandArguments())
 	if len(args) != 2 {
-		return "Использование: /del_notify_settings service level", nil
+		return "Использование: `/del_notify_settings service level`", nil
 	}
 
 	level, ok := entity.ParseLogLevel(strings.ToUpper(args[1]))
@@ -87,7 +110,7 @@ func (h *NotificationHandler) handleRemoveSettings(ctx context.Context, msg *tgb
 	if err := h.NotifyServ.RemoveSettings(ctx, msg.Chat.ID, args[0], level); err != nil {
 		switch {
 		case errors.Is(err, srverrs.ErrNotifySettingNotFound):
-			return "Указанная настройка не найдена.", nil
+			return "⚠️ Указанная настройка не найдена.", nil
 		case errors.Is(err, srverrs.ErrRemoveNotifySettings):
 			return "Произошла ошибка при удалении настройки. Попробуйте позже.", nil
 		default:
@@ -95,5 +118,28 @@ func (h *NotificationHandler) handleRemoveSettings(ctx context.Context, msg *tgb
 		}
 	}
 
-	return "Настройка успешно удалена ✅", nil
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
+		),
+	)
+
+	return "✅ Настройка успешно удалена!", keyboard
+}
+
+func (h *NotificationHandler) handleViewSettingsCallback(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
+	msg := cb.Message
+	answ, _ := h.handleViewSettings(ctx, msg)
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Изменить настройки", "set_settings"),
+			tgbotapi.NewInlineKeyboardButtonData("Удалить настройку", "remove_settings"),
+		),
+	)
+	return answ, keyboard
+}
+
+func (h *NotificationHandler) handleRemoveSettingsCallback(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
+	msg := cb.Message
+	return h.handleRemoveSettings(ctx, msg)
 }

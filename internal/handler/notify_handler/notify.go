@@ -31,23 +31,7 @@ func (h *NotificationHandler) registerCommands() {
 
 	h.RegisterCallback("view_settings", h.handleViewSettingsCallback)
 	h.RegisterCallback("remove_settings", h.handleRemoveSettingsCallback)
-}
-
-func (h *NotificationHandler) handleViewSettingsCallback(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
-	msg := cb.Message
-	msg.Chat = cb.Message.Chat
-	answ, _ := h.handleViewSettings(ctx, msg)
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
-			tgbotapi.NewInlineKeyboardButtonData("Удалить настройку", "remove_settings"),
-		),
-	)
-	return answ, keyboard
-}
-
-func (h *NotificationHandler) handleRemoveSettingsCallback(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
-	msg := cb.Message
-	msg.Chat = cb.Message.Chat
-	return h.handleRemoveSettings(ctx, msg)
+	h.RegisterCallback("set_settings", func(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
+		return "🛠 Чтобы добавить настройки, используйте:\n`/set_notify_settings service1,service2 [level1,level2]`", nil
+	})
 }
