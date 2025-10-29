@@ -21,10 +21,10 @@ func NewInMemoryUserRepo() *InMemoryUserRepo {
 func (r *InMemoryUserRepo) Create(user *entity.User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if _, exists := r.data[user.ID]; exists {
+	if _, exists := r.data[user.TgID]; exists {
 		return repoerrs.ErrAlreadyExists
 	}
-	r.data[user.ID] = user
+	r.data[user.TgID] = user
 	return nil
 }
 

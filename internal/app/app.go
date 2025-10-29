@@ -2,6 +2,7 @@
 package app
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -55,7 +56,8 @@ func Run() {
 	})
 
 	// Tg Bot
-	handler := handler.ConfigureHandler(services)
+	ctx := context.Background()
+	handler := handler.ConfigureHandler(ctx, services)
 	telegramBot := bot.NewBot(token, handler, 10, true)
 	telegramBot.Start(60)
 

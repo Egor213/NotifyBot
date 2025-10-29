@@ -8,6 +8,15 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+func getCommands() []tgbotapi.BotCommand {
+	return []tgbotapi.BotCommand{
+		{Command: "start", Description: "Начать работу с ботом"},
+		{Command: "register", Description: "Зарегистрировать email"},
+		{Command: "notify", Description: "Отправить уведомление"},
+		{Command: "status", Description: "Проверить статус бота"},
+	}
+}
+
 type Bot struct {
 	tg      *tgbotapi.BotAPI
 	handler *handler.Handler
@@ -21,12 +30,7 @@ func NewBot(token string, h *handler.Handler, workers int, debug bool) *Bot {
 	}
 	botAPI.Debug = debug
 
-	commands := []tgbotapi.BotCommand{
-		{Command: "start", Description: "Начать работу с ботом"},
-		{Command: "register", Description: "Зарегистрировать email"},
-		{Command: "notify", Description: "Отправить уведомление"},
-		{Command: "status", Description: "Проверить статус бота"},
-	}
+	commands := getCommands()
 
 	cfg := tgbotapi.NewSetMyCommands(commands...)
 	if _, err := botAPI.Request(cfg); err != nil {

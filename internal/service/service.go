@@ -1,13 +1,15 @@
 package service
 
 import (
+	"context"
+
 	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/repository"
 	"github.com/Egor213/notifyBot/internal/service/users"
 )
 
 type Users interface {
-	RegisterUser(id int64, email string) (*entity.User, error)
+	RegisterUser(ctx context.Context, id int64, email string) (*entity.User, error)
 }
 
 type Services struct {

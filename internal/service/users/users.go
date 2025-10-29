@@ -1,10 +1,14 @@
 package users
 
 import (
+	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/repository"
+	"github.com/Egor213/notifyBot/internal/repository/repoerrs"
+	"github.com/Egor213/notifyBot/internal/service/srverrs"
 )
 
 type UserService struct {
@@ -15,19 +19,21 @@ func New(repo repository.Users) *UserService {
 	return &UserService{userRepo: repo}
 }
 
-func (s *UserService) RegisterUser(id int64, email string) (*entity.User, error) {
-	if email == "" {
-		return nil, errors.New("email cannot be empty")
+func (s *UserService) RegisterUser(ctx context.Context, tgID int64, email string) (*entity.User, error) {
+	existing, err := s.userRepo.GetByID(ctx, tgID)
+	if err != nil && !errors.Is(err, repoerrs.ErrUserNotFound) {
+		return nil, fmt.Errorf("%w: %v", srverrs.ErrUserCheckFailed, err)
 	}
-
+	if existing != nil {
+		return nil, srverrs.ErrUserAlreadyExists
+	}
 	user := &entity.User{
-		ID:    id,
+		TgID:  tgID,
 		Email: email,
 	}
-
-	err := s.userRepo.Create(user)
-	if err != nil {
-		return nil, err
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, fmt.Errorf("%w: %v", srverrs.ErrUserCreateFailed, err)
 	}
+
 	return user, nil
 }

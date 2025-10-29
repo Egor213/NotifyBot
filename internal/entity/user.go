@@ -2,6 +2,6 @@
 package entity
 
 type User struct {
-	ID    int64
+	TgID  int64
 	Email string
 }

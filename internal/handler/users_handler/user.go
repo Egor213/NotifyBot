@@ -1,37 +1,30 @@
 package usershandler
 
 import (
+	"context"
+
+	"github.com/Egor213/notifyBot/internal/handler/common"
 	"github.com/Egor213/notifyBot/internal/service"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type UserHandler struct {
-	service  service.Users
-	commands map[string]func(*tgbotapi.Message) string
+	*common.BaseHandler
+	UserService service.Users
 }
 
 func NewUserHandler(s service.Users) *UserHandler {
 	h := &UserHandler{
-		service:  s,
-		commands: make(map[string]func(*tgbotapi.Message) string),
+		BaseHandler: &common.BaseHandler{},
+		UserService: s,
 	}
 	h.registerCommands()
 	return h
 }
 
 func (h *UserHandler) registerCommands() {
-	h.commands["start"] = func(msg *tgbotapi.Message) string { return h.handleStart() }
-	h.commands["register"] = h.handleRegister
-}
-
-func (h *UserHandler) CanHandle(command string) bool {
-	_, ok := h.commands[command]
-	return ok
-}
-
-func (h *UserHandler) HandleCommand(msg *tgbotapi.Message) string {
-	if handlerFunc, ok := h.commands[msg.Command()]; ok {
-		return handlerFunc(msg)
-	}
-	return "Неизвестная команда пользователя."
+	h.RegisterCommand("start", func(_ context.Context, _ *tgbotapi.Message) string {
+		return h.handleStart()
+	})
+	h.RegisterCommand("register", h.handleRegister)
 }

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+
 	notifyhandler "github.com/Egor213/notifyBot/internal/handler/notify_handler"
 	usershandler "github.com/Egor213/notifyBot/internal/handler/users_handler"
 	"github.com/Egor213/notifyBot/internal/service"
@@ -9,15 +11,16 @@ import (
 
 type CommandHandler interface {
 	CanHandle(command string) bool
-	HandleCommand(msg *tgbotapi.Message) string
+	HandleCommand(ctx context.Context, msg *tgbotapi.Message) string
 }
 
 type Handler struct {
 	handlers []CommandHandler
+	ctx      context.Context
 }
 
-func NewHandler(handlers ...CommandHandler) *Handler {
-	return &Handler{handlers: handlers}
+func NewHandler(ctx context.Context, handlers ...CommandHandler) *Handler {
+	return &Handler{ctx: ctx, handlers: handlers}
 }
 
 func (h *Handler) HandleMessage(msg *tgbotapi.Message) string {
@@ -29,15 +32,15 @@ func (h *Handler) HandleMessage(msg *tgbotapi.Message) string {
 
 	for _, handler := range h.handlers {
 		if handler.CanHandle(command) {
-			return handler.HandleCommand(msg)
+			return handler.HandleCommand(h.ctx, msg)
 		}
 	}
 
 	return "Неизвестная команда. Используйте /start для справки."
 }
 
-func ConfigureHandler(services *service.Services) *Handler {
+func ConfigureHandler(ctx context.Context, services *service.Services) *Handler {
 	userHandler := usershandler.NewUserHandler(services.User)
 	notifyHandler := notifyhandler.NewNotificationHandler()
-	return NewHandler(userHandler, notifyHandler)
+	return NewHandler(ctx, userHandler, notifyHandler)
 }
