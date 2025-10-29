@@ -3,6 +3,7 @@ package usershandler
 import (
 	"context"
 
+	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/handler/common"
 	"github.com/Egor213/notifyBot/internal/service"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,7 +24,7 @@ func NewUserHandler(s service.Users) *UserHandler {
 }
 
 func (h *UserHandler) registerCommands() {
-	h.RegisterCommand("start", func(_ context.Context, _ *tgbotapi.Message) string {
+	h.RegisterCommand("start", func(_ context.Context, _ *tgbotapi.Message) (string, entity.ReplyMarkup) {
 		return h.handleStart()
 	})
 	h.RegisterCommand("register", h.handleRegister)

@@ -53,21 +53,40 @@ func (b *Bot) Start(bot_timeout int) {
 
 	updates := b.tg.GetUpdatesChan(u)
 	msgChan := make(chan *tgbotapi.Message, 100)
+	cbChan := make(chan *tgbotapi.CallbackQuery, 100)
 
 	for i := 0; i < b.workers; i++ {
 		go sendUpdMes(msgChan, b)
+		go handleCallback(cbChan, b)
 	}
+
 	for update := range updates {
 		if update.Message != nil {
 			msgChan <- update.Message
+		}
+		if update.CallbackQuery != nil {
+			cbChan <- update.CallbackQuery
 		}
 	}
 }
 
 func sendUpdMes(msgChan <-chan *tgbotapi.Message, b *Bot) {
 	for msg := range msgChan {
-		response := b.handler.HandleMessage(msg)
+		response, keyboard := b.handler.HandleMessage(msg)
 		msgToSend := tgbotapi.NewMessage(msg.Chat.ID, response)
+		msgToSend.ReplyMarkup = keyboard
+		b.tg.Send(msgToSend)
+	}
+}
+
+func handleCallback(cbChan <-chan *tgbotapi.CallbackQuery, b *Bot) {
+	for cb := range cbChan {
+		b.tg.Request(tgbotapi.NewCallback(cb.ID, ""))
+
+		chatID := cb.Message.Chat.ID
+		response, keyboard := b.handler.HandleCallback(cb)
+		msgToSend := tgbotapi.NewMessage(chatID, response)
+		msgToSend.ReplyMarkup = keyboard
 		b.tg.Send(msgToSend)
 	}
 }

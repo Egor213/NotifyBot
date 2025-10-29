@@ -14,3 +14,5 @@ type NotifySetting struct {
 	Service string
 	Level   LogLevel
 }
+
+type ReplyMarkup = interface{}
