@@ -1,0 +1,2 @@
+DROP TABLE IS NOT EXISTS users_mails;
+DROP TABLE IS NOT EXISTS users_filters;
