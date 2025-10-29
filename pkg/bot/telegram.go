@@ -12,9 +12,11 @@ func getCommands() []tgbotapi.BotCommand {
 	return []tgbotapi.BotCommand{
 		{Command: "start", Description: "Начать работу с ботом"},
 		{Command: "register", Description: "Зарегистрировать email"},
-		{Command: "notify", Description: "Отправить уведомление"},
 		{Command: "status", Description: "Проверить статус бота"},
 		{Command: "get_email", Description: "Посмотреть свою почту"},
+		{Command: "notify_settings", Description: "Настройки оповещений"},
+		{Command: "set_notify_settings", Description: "Устновить настройки оповещений"},
+		{Command: "del_notify_settings", Description: "Удалить настройки оповещений"},
 	}
 }
 

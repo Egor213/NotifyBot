@@ -12,8 +12,15 @@ type Users interface {
 	GetEmail(ctx context.Context, tgID int64) (string, error)
 }
 
+type NotifySettings interface {
+	GetSettings(ctx context.Context, tgID int64) ([]*entity.NotifySetting, error)
+	SetSettings(ctx context.Context, tgID int64, services []string, levels []entity.LogLevel) error
+	RemoveSettings(ctx context.Context, tgID int64, service string, level entity.LogLevel) error
+}
+
 type Services struct {
-	User Users
+	User           Users
+	NotifySettings NotifySettings
 }
 
 type ServiceDep struct {
@@ -22,6 +29,7 @@ type ServiceDep struct {
 
 func NewServices(dep *ServiceDep) *Services {
 	return &Services{
-		User: NewUsers(dep.Repos.Users),
+		User:           NewUsers(dep.Repos.Users),
+		NotifySettings: NewNotifySettingsService(dep.Repos.NotifySettings),
 	}
 }

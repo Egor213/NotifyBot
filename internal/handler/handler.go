@@ -41,6 +41,6 @@ func (h *Handler) HandleMessage(msg *tgbotapi.Message) string {
 
 func ConfigureHandler(ctx context.Context, services *service.Services) *Handler {
 	userHandler := usershandler.NewUserHandler(services.User)
-	notifyHandler := notifyhandler.NewNotificationHandler()
+	notifyHandler := notifyhandler.NewNotificationHandler(services.NotifySettings)
 	return NewHandler(ctx, userHandler, notifyHandler)
 }
