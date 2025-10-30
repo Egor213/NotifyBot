@@ -21,7 +21,7 @@ func getCommands() []tgbotapi.BotCommand {
 }
 
 type Bot struct {
-	tg      *tgbotapi.BotAPI
+	Tg      *tgbotapi.BotAPI
 	handler *handler.Handler
 	workers int
 }
@@ -41,7 +41,7 @@ func NewBot(token string, h *handler.Handler, workers int, debug bool) *Bot {
 	}
 
 	return &Bot{
-		tg:      botAPI,
+		Tg:      botAPI,
 		handler: h,
 		workers: workers,
 	}
@@ -51,7 +51,7 @@ func (b *Bot) Start(bot_timeout int) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = bot_timeout
 
-	updates := b.tg.GetUpdatesChan(u)
+	updates := b.Tg.GetUpdatesChan(u)
 	msgChan := make(chan *tgbotapi.Message, 100)
 	cbChan := make(chan *tgbotapi.CallbackQuery, 100)
 
@@ -75,20 +75,20 @@ func sendUpdMes(msgChan <-chan *tgbotapi.Message, b *Bot) {
 		response, keyboard := b.handler.HandleMessage(msg)
 		msgToSend := tgbotapi.NewMessage(msg.Chat.ID, response)
 		msgToSend.ReplyMarkup = keyboard
-		// msgToSend.ParseMode = tgbotapi.ModeMarkdown
-		b.tg.Send(msgToSend)
+		// msgToSend.ParseMode = tgbotapi.ModeMarkdownV2
+		b.Tg.Send(msgToSend)
 	}
 }
 
 func handleCallback(cbChan <-chan *tgbotapi.CallbackQuery, b *Bot) {
 	for cb := range cbChan {
-		b.tg.Request(tgbotapi.NewCallback(cb.ID, ""))
+		b.Tg.Request(tgbotapi.NewCallback(cb.ID, ""))
 
 		chatID := cb.Message.Chat.ID
 		response, keyboard := b.handler.HandleCallback(cb)
 		msgToSend := tgbotapi.NewMessage(chatID, response)
-		// msgToSend.ParseMode = tgbotapi.ModeMarkdown
+		// msgToSend.ParseMode = tgbotapi.ModeMarkdownV2
 		msgToSend.ReplyMarkup = keyboard
-		b.tg.Send(msgToSend)
+		b.Tg.Send(msgToSend)
 	}
 }

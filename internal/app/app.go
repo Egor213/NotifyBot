@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	kafkabroker "github.com/Egor213/notifyBot/internal/broker/kafka"
+	telegramworker "github.com/Egor213/notifyBot/internal/broker/worker/telegram"
 	"github.com/Egor213/notifyBot/internal/config"
 	"github.com/Egor213/notifyBot/internal/handler"
 	"github.com/Egor213/notifyBot/internal/repository"
@@ -19,21 +21,16 @@ import (
 )
 
 func Run() {
-	// Config
-
 	cfg, err := config.New()
 	if err != nil {
 		log.Fatal(errorsUtils.WrapPathErr(err))
 	}
 
-	// Logger
 	logger.SetupLogger(cfg.Log.Level)
 	log.Info("Logger has been set up")
 
-	// Migrations
 	Migrate(cfg.PG.URL)
 
-	// DB connecting
 	log.Info("Connecting to DB")
 	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.MaxPoolSize))
 	if err != nil {
@@ -44,31 +41,43 @@ func Run() {
 
 	token := os.Getenv("TELEGRAM_TOKEN")
 	if token == "" {
-		log.Fatal("TELEGRAM_TOKEN не задан в .env или переменных окружения")
+		log.Fatal("TELEGRAM_TOKEN не задан")
 	}
 
-	// Repo
 	repo := repository.NewRepositoriesPG(pg)
+	services := service.NewServices(&service.ServiceDep{Repos: repo})
 
-	// Services
-	services := service.NewServices(&service.ServiceDep{
-		Repos: repo,
-	})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	// Tg Bot
-	ctx := context.Background()
 	handler := handler.ConfigureHandler(ctx, services)
 	telegramBot := bot.NewBot(token, handler, 10, true)
-	telegramBot.Start(60)
 
-	// Waiting signal
+	br := kafkabroker.NewConsumer(kafkabroker.ConsumerConfig{
+		Brokers: []string{"localhost:9092"},
+		Topic:   "notifications",
+		GroupID: "notify-bot",
+	})
+	kafkaWorker := telegramworker.NewNotifyWorker(telegramBot)
+	br.RegisterWorker(kafkaWorker)
+
+	go func() {
+		if err := br.Run(ctx); err != nil {
+			log.Errorf("Kafka consumer stopped with error: %v", err)
+		}
+	}()
+
+	go telegramBot.Start(60)
+
+	// Graceful shutdown
 	log.Info("Configuring graceful shutdown")
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
-	select {
-	case s := <-interrupt:
-		log.Info("app - Run - signal: " + s.String())
-	}
+	<-interrupt
+	log.Info("Received shutdown signal")
 
+	cancel()
+	br.Close()
+	log.Info("Shutdown complete")
 }

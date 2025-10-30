@@ -28,6 +28,7 @@ func (r *NotifySettingsRepo) GetByUser(ctx context.Context, tgID int64) ([]*enti
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", repoerrs.ErrGetSettings, err)
+
 	}
 
 	rows, err := r.pg.Pool.Query(ctx, query, args...)
