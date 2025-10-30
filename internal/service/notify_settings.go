@@ -7,6 +7,7 @@ import (
 
 	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/repository"
+	"github.com/Egor213/notifyBot/internal/repository/repotypes"
 	"github.com/Egor213/notifyBot/internal/service/srverrs"
 )
 
@@ -55,4 +56,12 @@ func (s *NotifySettingsService) RemoveSettings(ctx context.Context, tgID int64, 
 		return fmt.Errorf("%w: %v", srverrs.ErrRemoveNotifySettings, err)
 	}
 	return nil
+}
+
+func (s *NotifySettingsService) GetChatIDsByFilters(ctx context.Context, filter repotypes.ChatIDFilter) ([]int64, error) {
+	chatIDS, err := s.repo.GetChatIDsByFilters(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("NotifySettingsService.GetChatIDsByFilters - s.repo.GetChatIDsByFilters: %w", err)
+	}
+	return chatIDS, nil
 }

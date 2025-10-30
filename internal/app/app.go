@@ -58,7 +58,7 @@ func Run() {
 		Topic:   "notifications",
 		GroupID: "notify-bot",
 	})
-	kafkaWorker := telegramworker.NewNotifyWorker(telegramBot)
+	kafkaWorker := telegramworker.NewNotifyWorker(telegramBot, services.NotifySettings)
 	br.RegisterWorker(kafkaWorker)
 
 	go func() {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/repository/repoerrs"
+	"github.com/Egor213/notifyBot/internal/repository/repotypes"
 	"github.com/Egor213/notifyBot/pkg/postgres"
 	sq "github.com/Masterminds/squirrel"
 )
@@ -92,4 +93,38 @@ func (r *NotifySettingsRepo) Delete(ctx context.Context, tgID int64, service str
 	}
 
 	return nil
+}
+func (r *NotifySettingsRepo) GetChatIDsByFilters(ctx context.Context, filter repotypes.ChatIDFilter) ([]int64, error) {
+	conds := BuildGetChatIDQuery(filter)
+	query := r.pg.Builder.
+		Select("DISTINCT tg_id").
+		From("users_notify_settings n").
+		Join("users_mails m USING(tg_id)")
+
+	if len(conds) > 0 {
+		query = query.Where(sq.And(conds))
+	}
+
+	sql, args, _ := query.ToSql()
+	rows, err := r.pg.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("NotifySettingsRepo.GetChatIDsByFilters - r.pg.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	chatIDS := []int64{}
+	for rows.Next() {
+		var chatIDTemp int64
+		if err := rows.Scan(&chatIDTemp); err != nil {
+			return nil, fmt.Errorf("NotifySettingsRepo.GetChatIDsByFilters - rows.Scan: %w", err)
+		}
+		chatIDS = append(chatIDS, chatIDTemp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("NotifySettingsRepo.GetChatIDsByFilters - rows.Err: %w", err)
+
+	}
+
+	return chatIDS, nil
 }

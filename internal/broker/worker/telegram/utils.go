@@ -17,7 +17,7 @@ func ParceLogMsg(msg string) map[string]string {
 		if len(kv) == 2 {
 			key := strings.TrimSpace(kv[0])
 			val := strings.TrimSpace(kv[1])
-			data[key] = strings.ToLower(val)
+			data[key] = val
 		}
 	}
 	return data

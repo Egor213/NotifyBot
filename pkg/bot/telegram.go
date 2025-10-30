@@ -2,7 +2,7 @@
 package bot
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Egor213/notifyBot/internal/handler"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -75,7 +75,7 @@ func sendUpdMes(msgChan <-chan *tgbotapi.Message, b *Bot) {
 		response, keyboard := b.handler.HandleMessage(msg)
 		msgToSend := tgbotapi.NewMessage(msg.Chat.ID, response)
 		msgToSend.ReplyMarkup = keyboard
-		// msgToSend.ParseMode = tgbotapi.ModeMarkdownV2
+		msgToSend.ParseMode = tgbotapi.ModeMarkdown
 		b.Tg.Send(msgToSend)
 	}
 }
@@ -87,7 +87,7 @@ func handleCallback(cbChan <-chan *tgbotapi.CallbackQuery, b *Bot) {
 		chatID := cb.Message.Chat.ID
 		response, keyboard := b.handler.HandleCallback(cb)
 		msgToSend := tgbotapi.NewMessage(chatID, response)
-		// msgToSend.ParseMode = tgbotapi.ModeMarkdownV2
+		msgToSend.ParseMode = tgbotapi.ModeMarkdown
 		msgToSend.ReplyMarkup = keyboard
 		b.Tg.Send(msgToSend)
 	}

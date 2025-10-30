@@ -5,6 +5,7 @@ import (
 
 	"github.com/Egor213/notifyBot/internal/entity"
 	pgdb "github.com/Egor213/notifyBot/internal/repository/pg"
+	"github.com/Egor213/notifyBot/internal/repository/repotypes"
 	"github.com/Egor213/notifyBot/pkg/postgres"
 )
 
@@ -17,6 +18,7 @@ type NotifySettings interface {
 	GetByUser(ctx context.Context, tgID int64) ([]*entity.NotifySetting, error)
 	Create(ctx context.Context, setting *entity.NotifySetting) error
 	Delete(ctx context.Context, tgID int64, service string, level entity.LogLevel) error
+	GetChatIDsByFilters(ctx context.Context, filter repotypes.ChatIDFilter) ([]int64, error)
 }
 
 type Repositories struct {

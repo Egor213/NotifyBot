@@ -5,6 +5,7 @@ import (
 
 	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/repository"
+	"github.com/Egor213/notifyBot/internal/repository/repotypes"
 )
 
 type Users interface {
@@ -16,6 +17,7 @@ type NotifySettings interface {
 	GetSettings(ctx context.Context, tgID int64) ([]*entity.NotifySetting, error)
 	SetSettings(ctx context.Context, tgID int64, services []string, levels []entity.LogLevel) error
 	RemoveSettings(ctx context.Context, tgID int64, service string, level entity.LogLevel) error
+	GetChatIDsByFilters(ctx context.Context, filter repotypes.ChatIDFilter) ([]int64, error)
 }
 
 type Services struct {
