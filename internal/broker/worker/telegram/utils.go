@@ -25,9 +25,9 @@ func ParceLogMsg(msg string) map[string]string {
 
 func CreateTgLogMsg(data map[string]string) string {
 	levelEmoji := map[string]string{
-		"info":  "ℹ️",
-		"warn":  "⚠️",
-		"error": "❌",
+		"INFO":  "ℹ️",
+		"WARN":  "⚠️",
+		"ERROR": "❌",
 	}
 
 	emoji := levelEmoji[data["level"]]

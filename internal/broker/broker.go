@@ -2,7 +2,7 @@ package broker
 
 import "context"
 
-type Broker interface {
+type Consumer interface {
 	Run(ctx context.Context) error
 	Close() error
 }

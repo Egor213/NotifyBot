@@ -25,7 +25,7 @@ func (w *NotifyWorker) ProcessMsg(ctx context.Context, msg kafka.Message) {
 	filter := BuildChatIDFilter(parcedMsg)
 	chatIDs, err := w.NotifySettingsServ.GetChatIDsByFilters(ctx, filter)
 	if err != nil {
-		log.Errorf("NotifyWorker.ProcessMsg - w.NotifySettingsServ.GetChatIDsByFilters: %w", err)
+		log.Errorf("NotifyWorker.ProcessMsg - w.NotifySettingsServ.GetChatIDsByFilters: %v", err)
 		return
 	}
 	tgLogMsg := CreateTgLogMsg(parcedMsg)
