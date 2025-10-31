@@ -11,15 +11,17 @@ import (
 
 type UserHandler struct {
 	*common.BaseHandler
-	UserService service.Users
-	StateServ   service.State
+	UserService  service.Users
+	StateService service.State
+	MailService  service.MailSender
 }
 
-func NewUserHandler(user service.Users, state service.State) *UserHandler {
+func NewUserHandler(user service.Users, state service.State, mailSender service.MailSender) *UserHandler {
 	h := &UserHandler{
-		BaseHandler: &common.BaseHandler{},
-		UserService: user,
-		StateServ:   state,
+		BaseHandler:  &common.BaseHandler{},
+		UserService:  user,
+		StateService: state,
+		MailService:  mailSender,
 	}
 	h.registerCommands()
 	return h
@@ -29,7 +31,7 @@ func (h *UserHandler) registerCommands() {
 	h.RegisterCommand("start", func(_ context.Context, _ *tgbotapi.Message) (string, entity.ReplyMarkup) {
 		return h.handleStart()
 	})
-	h.RegisterCommand("register", h.handleRegister)
+	h.RegisterCommand("register", h.handleStartRegister)
 	h.RegisterCommand("get_email", h.handleGetEmail)
 
 	h.RegisterCallback("register", func(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
@@ -41,8 +43,6 @@ func (h *UserHandler) registerCommands() {
 		return h.handleGetEmail(ctx, msg)
 	})
 
-	h.RegisterState(entity.StateAwaitingVerificationCode, func(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
-		return string("TEST STATE"), nil
-	})
+	h.RegisterState(entity.StateAwaitingVerificationCode, h.handlerVerifyEmail)
 
 }

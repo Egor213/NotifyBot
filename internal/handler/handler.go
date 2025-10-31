@@ -55,7 +55,8 @@ func (h *Handler) HandleCallback(cb *tgbotapi.CallbackQuery) (string, entity.Rep
 }
 
 func ConfigureHandler(ctx context.Context, services *service.Services) *Handler {
-	userHandler := usershandler.NewUserHandler(services.User, services.State)
+	// Тут можно сразу services передавать а не перебирать руками, все равно указатель
+	userHandler := usershandler.NewUserHandler(services.User, services.State, services.MailSender)
 	notifyHandler := notifyhandler.NewNotificationHandler(services.NotifySettings)
 
 	return &Handler{

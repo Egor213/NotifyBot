@@ -45,7 +45,22 @@ func Run() {
 	}
 
 	repo := repository.NewRepositoriesPG(pg)
-	services := service.NewServices(&service.ServiceDep{Repos: repo})
+
+	sendMailKey := os.Getenv("MAIL_KEY")
+	if sendMailKey == "" {
+		log.Fatal("MAIL_KEY не задан")
+	}
+
+	sendMailDep := service.SendMailDep{
+		SendMail:  os.Getenv("SENDER_MAIL"),
+		Port:      587,
+		Protocol:  "smtp.gmail.com",
+		SecretKey: sendMailKey,
+	}
+	services := service.NewServices(&service.ServiceDep{
+		Repos:       repo,
+		SendMailDep: sendMailDep,
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

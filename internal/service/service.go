@@ -26,14 +26,27 @@ type State interface {
 	ClearState(chatID int64)
 }
 
+type MailSender interface {
+	SendMessage(to string, title string, body string) error
+}
+
 type Services struct {
 	User           Users
 	NotifySettings NotifySettings
 	State          State
+	MailSender     MailSender
+}
+
+type SendMailDep struct {
+	SendMail  string
+	Port      int
+	Protocol  string
+	SecretKey string
 }
 
 type ServiceDep struct {
-	Repos *repository.Repositories
+	Repos       *repository.Repositories
+	SendMailDep SendMailDep
 }
 
 func NewServices(dep *ServiceDep) *Services {
@@ -41,5 +54,6 @@ func NewServices(dep *ServiceDep) *Services {
 		User:           NewUsers(dep.Repos.Users),
 		NotifySettings: NewNotifySettingsService(dep.Repos.NotifySettings),
 		State:          NewStateService(),
+		MailSender:     NewMailSenderService(dep.SendMailDep),
 	}
 }
