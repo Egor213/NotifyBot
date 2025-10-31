@@ -15,12 +15,12 @@ type ConsumerConfig struct {
 	GroupID string
 }
 
-type Consumer struct {
+type KafkaConsumer struct {
 	reader  *kafka.Reader
 	workers []worker.Worker
 }
 
-func NewConsumer(cfg ConsumerConfig) *Consumer {
+func NewConsumer(cfg ConsumerConfig) *KafkaConsumer {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        cfg.Brokers,
 		Topic:          cfg.Topic,
@@ -30,14 +30,14 @@ func NewConsumer(cfg ConsumerConfig) *Consumer {
 		CommitInterval: time.Second,
 		// StartOffset:    kafka.LastOffset,
 	})
-	return &Consumer{reader: r}
+	return &KafkaConsumer{reader: r}
 }
 
-func (c *Consumer) RegisterWorker(w worker.Worker) {
+func (c *KafkaConsumer) RegisterWorker(w worker.Worker) {
 	c.workers = append(c.workers, w)
 }
 
-func (c *Consumer) Run(ctx context.Context) error {
+func (c *KafkaConsumer) Run(ctx context.Context) error {
 	log.Debugf("Kafka consumer started for topic '%s'\n", c.reader.Config().Topic)
 	for {
 		m, err := c.reader.ReadMessage(ctx)
@@ -58,7 +58,7 @@ func (c *Consumer) Run(ctx context.Context) error {
 	}
 }
 
-func (c *Consumer) Close() error {
+func (c *KafkaConsumer) Close() error {
 	log.Info("Closing Kafka consumer...")
 	return c.reader.Close()
 }
