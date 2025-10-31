@@ -11,6 +11,7 @@ import (
 type BaseHandler struct {
 	commands  map[string]func(context.Context, *tgbotapi.Message) (string, entity.ReplyMarkup)
 	callbacks map[string]func(context.Context, *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup)
+	states    map[entity.StateType]func(context.Context, *tgbotapi.Message) (string, entity.ReplyMarkup)
 }
 
 func (b *BaseHandler) CanHandle(command string) bool {
@@ -52,4 +53,23 @@ func (b *BaseHandler) HandleCallback(ctx context.Context, cb *tgbotapi.CallbackQ
 		return handlerFunc(ctx, cb)
 	}
 	return fmt.Sprintf("Неизвестный callback: %s", cb.Data), nil
+}
+
+func (b *BaseHandler) RegisterState(state entity.StateType, f func(context.Context, *tgbotapi.Message) (string, entity.ReplyMarkup)) {
+	if b.states == nil {
+		b.states = make(map[entity.StateType]func(context.Context, *tgbotapi.Message) (string, entity.ReplyMarkup))
+	}
+	b.states[state] = f
+}
+
+func (b *BaseHandler) CanHandleState(state entity.StateType) bool {
+	_, ok := b.states[state]
+	return ok
+}
+
+func (b *BaseHandler) HandleState(ctx context.Context, msg *tgbotapi.Message, state entity.StateType) (string, entity.ReplyMarkup) {
+	if handlerFunc, ok := b.states[state]; ok {
+		return handlerFunc(ctx, msg)
+	}
+	return "Неожиданное сообщение.", nil
 }

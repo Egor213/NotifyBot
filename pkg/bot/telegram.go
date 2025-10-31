@@ -4,6 +4,7 @@ package bot
 import (
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Egor213/notifyBot/internal/entity"
 	"github.com/Egor213/notifyBot/internal/handler"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -72,7 +73,15 @@ func (b *Bot) Start(bot_timeout int) {
 
 func sendUpdMes(msgChan <-chan *tgbotapi.Message, b *Bot) {
 	for msg := range msgChan {
-		response, keyboard := b.handler.HandleMessage(msg)
+		var response string
+		var keyboard entity.ReplyMarkup
+
+		if !msg.IsCommand() {
+			response, keyboard = b.handler.HandleNonCommandMessage(msg)
+		} else {
+			response, keyboard = b.handler.HandleMessage(msg)
+		}
+
 		msgToSend := tgbotapi.NewMessage(msg.Chat.ID, response)
 		msgToSend.ReplyMarkup = keyboard
 		msgToSend.ParseMode = tgbotapi.ModeMarkdown

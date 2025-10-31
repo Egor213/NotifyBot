@@ -7,17 +7,16 @@ import (
 	"strings"
 
 	"github.com/Egor213/notifyBot/internal/entity"
+	"github.com/Egor213/notifyBot/internal/handler/builders"
 	"github.com/Egor213/notifyBot/internal/service/srverrs"
 	"github.com/Egor213/notifyBot/pkg/validation"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (h *NotificationHandler) handleStatus(_ context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
-			tgbotapi.NewInlineKeyboardButtonData("Добавить настройку", "set_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Посмотреть настройки", Command: "view_settings"},
+		entity.InlineKeyboard{Name: "Добавить настройку", Command: "set_settings"},
 	)
 	return "Бот работает стабильно 🟢", keyboard
 }
@@ -34,10 +33,8 @@ func (h *NotificationHandler) handleViewSettings(ctx context.Context, msg *tgbot
 	}
 
 	if len(settings) == 0 {
-		keyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Добавить настройку", "set_settings"),
-			),
+		keyboard := builders.BuildInlineKeyboard(
+			entity.InlineKeyboard{Name: "Добавить настройку", Command: "set_settings"},
 		)
 		return "У вас пока нет настроек уведомлений.", keyboard
 	}
@@ -52,11 +49,9 @@ func (h *NotificationHandler) handleViewSettings(ctx context.Context, msg *tgbot
 		lines = append(lines, fmt.Sprintf("• %s — уровни: %s", svc, strings.Join(levels, ", ")))
 	}
 
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Изменить настройки", "set_settings"),
-			tgbotapi.NewInlineKeyboardButtonData("Удалить настройку", "remove_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Изменить настройки", Command: "set_settings"},
+		entity.InlineKeyboard{Name: "Удалить настройку", Command: "remove_settings"},
 	)
 
 	return "🔔 Ваши настройки уведомлений:\n\n" + strings.Join(lines, "\n"), keyboard
@@ -87,10 +82,8 @@ func (h *NotificationHandler) handleSetSettings(ctx context.Context, msg *tgbota
 		return fmt.Sprintf("❌ Не удалось сохранить настройки: %v", err), nil
 	}
 
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Посмотреть настройки", Command: "view_settings"},
 	)
 
 	return "✅ Настройки уведомлений успешно сохранены!", keyboard
@@ -118,10 +111,8 @@ func (h *NotificationHandler) handleRemoveSettings(ctx context.Context, msg *tgb
 		}
 	}
 
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Посмотреть настройки", "view_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Посмотреть настройки", Command: "view_settings"},
 	)
 
 	return "✅ Настройка успешно удалена!", keyboard
@@ -130,11 +121,9 @@ func (h *NotificationHandler) handleRemoveSettings(ctx context.Context, msg *tgb
 func (h *NotificationHandler) handleViewSettingsCallback(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
 	msg := cb.Message
 	answ, _ := h.handleViewSettings(ctx, msg)
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Изменить настройки", "set_settings"),
-			tgbotapi.NewInlineKeyboardButtonData("Удалить настройку", "remove_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Изменить настройки", Command: "set_settings"},
+		entity.InlineKeyboard{Name: "Удалить настройку", Command: "remove_settings"},
 	)
 	return answ, keyboard
 }

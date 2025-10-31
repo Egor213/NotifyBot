@@ -6,17 +6,16 @@ import (
 	"fmt"
 
 	"github.com/Egor213/notifyBot/internal/entity"
+	"github.com/Egor213/notifyBot/internal/handler/builders"
 	"github.com/Egor213/notifyBot/internal/service/srverrs"
 	"github.com/Egor213/notifyBot/pkg/validation"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (h *UserHandler) handleStart() (string, entity.ReplyMarkup) {
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Зарегистрироваться", "register"),
-			tgbotapi.NewInlineKeyboardButtonData("Проверить email", "get_email"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Зарегистрироваться", Command: "register"},
+		entity.InlineKeyboard{Name: "Проверить email", Command: "get_email"},
 	)
 	return "👋 Привет! Этот бот поможет вам управлять уведомлениями.\n\nДля начала зарегистрируйтесь, используя команду:\n`/register your@email.com`", keyboard
 }
@@ -47,11 +46,9 @@ func (h *UserHandler) handleRegister(ctx context.Context, msg *tgbotapi.Message)
 		}
 	}
 
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Посмотреть email", "get_email"),
-			tgbotapi.NewInlineKeyboardButtonData("Настройки уведомлений", "view_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Посмотреть email", Command: "get_email"},
+		entity.InlineKeyboard{Name: "Настройки уведомлений", Command: "view_settings"},
 	)
 
 	return fmt.Sprintf("✅ Регистрация прошла успешно!\nВаша почта: %s", user.Email), keyboard
@@ -62,10 +59,8 @@ func (h *UserHandler) handleGetEmail(ctx context.Context, msg *tgbotapi.Message)
 	if err != nil {
 		switch {
 		case errors.Is(err, srverrs.ErrUserNotFound):
-			keyboard := tgbotapi.NewInlineKeyboardMarkup(
-				tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData("Зарегистрироваться", "register"),
-				),
+			keyboard := builders.BuildInlineKeyboard(
+				entity.InlineKeyboard{Name: "Зарегистрироваться", Command: "register"},
 			)
 			return "🙁 Вы ещё не зарегистрированы.", keyboard
 		case errors.Is(err, srverrs.ErrUserCheckFailed):
@@ -75,10 +70,8 @@ func (h *UserHandler) handleGetEmail(ctx context.Context, msg *tgbotapi.Message)
 		}
 	}
 
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Изменить настройки уведомлений", "view_settings"),
-		),
+	keyboard := builders.BuildInlineKeyboard(
+		entity.InlineKeyboard{Name: "Изменить настройки уведомлений", Command: "view_settings"},
 	)
 
 	return fmt.Sprintf("📨 Ваш текущий email: %s", email), keyboard

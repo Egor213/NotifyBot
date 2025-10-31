@@ -12,12 +12,14 @@ import (
 type UserHandler struct {
 	*common.BaseHandler
 	UserService service.Users
+	StateServ   service.State
 }
 
-func NewUserHandler(s service.Users) *UserHandler {
+func NewUserHandler(user service.Users, state service.State) *UserHandler {
 	h := &UserHandler{
 		BaseHandler: &common.BaseHandler{},
-		UserService: s,
+		UserService: user,
+		StateServ:   state,
 	}
 	h.registerCommands()
 	return h
@@ -37,6 +39,10 @@ func (h *UserHandler) registerCommands() {
 	h.RegisterCallback("get_email", func(ctx context.Context, cb *tgbotapi.CallbackQuery) (string, entity.ReplyMarkup) {
 		msg := cb.Message
 		return h.handleGetEmail(ctx, msg)
+	})
+
+	h.RegisterState(entity.StateAwaitingVerificationCode, func(ctx context.Context, msg *tgbotapi.Message) (string, entity.ReplyMarkup) {
+		return string("TEST STATE"), nil
 	})
 
 }

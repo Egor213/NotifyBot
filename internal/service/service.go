@@ -20,9 +20,16 @@ type NotifySettings interface {
 	GetChatIDsByFilters(ctx context.Context, filter repotypes.ChatIDFilter) ([]int64, error)
 }
 
+type State interface {
+	SetState(chatID int64, state entity.StateType, data map[any]any)
+	GetState(chatID int64) *UserState
+	ClearState(chatID int64)
+}
+
 type Services struct {
 	User           Users
 	NotifySettings NotifySettings
+	State          State
 }
 
 type ServiceDep struct {
@@ -33,5 +40,6 @@ func NewServices(dep *ServiceDep) *Services {
 	return &Services{
 		User:           NewUsers(dep.Repos.Users),
 		NotifySettings: NewNotifySettingsService(dep.Repos.NotifySettings),
+		State:          NewStateService(),
 	}
 }
