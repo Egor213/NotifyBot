@@ -10,6 +10,9 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// Как будто вот эти все хендлеры надо было сразу делать, чтобы они возращали сконструйрованное сообщение для бота, а не просто текст и клавиатуру
+// В следующий раз буду знать)
+
 type CommandHandler interface {
 	CanHandle(command string) bool
 	CanHandleState(state entity.StateType) bool
